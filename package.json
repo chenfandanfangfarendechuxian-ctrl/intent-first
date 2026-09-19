@@ -1,0 +1,19 @@
+{
+  "name": "intent-first",
+  "version": "0.4.1",
+  "private": true,
+  "description": "Browse with a purpose. Reflect in your own words. Return to your next action.",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "test": "npm run build && node tests/smoke.cjs",
+    "preview": "node scripts/preview.cjs"
+  },
+  "devDependencies": {
+    "@babel/generator": "^7.28.0",
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "marked": "^18.0.13",
+    "playwright": "^1.55.0"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+artifacts/
+backups/
+*.log
+preview.html
+PREVIEW-NOTES.md
