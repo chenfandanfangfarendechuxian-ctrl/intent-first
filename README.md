@@ -2,6 +2,10 @@
 
 **Browse with a purpose. Reflect in your own words. Leave with a next step.**
 
+**[⬇ Download for Chrome — installation ZIP](https://github.com/chenfandanfangfarendechuxian-ctrl/intent-first/releases/latest/download/intent-first-chrome.zip)** · [Installation steps](#install-in-chrome)
+
+No coding or build tools needed. English and Chinese are included in the same download.
+
 [中文介绍](README.zh-CN.md) · [Why I built it](docs/why-intent-first.md) · [Privacy](PRIVACY.md) · [Testing](VALIDATION.md)
 
 Intent First (醒一下) is a small Chrome extension for **X / Twitter and Douyin** (a short-video app in mainland China) **on the web**. It adds a moment of reflection to an otherwise endless feed: decide what you came for, notice what you actually took away, and return to something you want to do.
@@ -12,21 +16,34 @@ The interface runs in **English and Chinese**, with English as the default; pick
 
 ![Starting a visit with a purpose, stopping rule, and next action](docs/images/start.png)
 
-## Try it
+## Install in Chrome
 
 This is an early, unpacked extension. It is **not currently listed in the Chrome Web Store**.
 
-1. Download this repository using **Code → Download ZIP**, then extract it.
-2. Open `chrome://extensions` in Chrome.
-3. Enable **Developer mode**, click **Load unpacked**, and select the **`extension`** folder inside the extracted repository.
-4. Open the extension popup and choose **Notes & settings**.
-5. Refresh any X or Douyin pages you already had open.
+1. **[Download `intent-first-chrome.zip`](https://github.com/chenfandanfangfarendechuxian-ctrl/intent-first/releases/latest/download/intent-first-chrome.zip)**. This is the ready-to-install package; you do not need the source code.
+2. **Extract the ZIP.** Keep the extracted **`intent-first`** folder somewhere permanent, such as Documents. Chrome loads the extension from this folder, so keep it after installing.
+3. Copy **`chrome://extensions`** into Chrome's address bar and press Enter.
+4. Turn on **Developer mode** in the top-right corner, then click **Load unpacked**.
+5. Select the **`intent-first` folder that contains `manifest.json`**. Select the folder, not the ZIP or an individual file.
+6. Open the extension from Chrome's puzzle-piece menu, choose **Notes & settings**, and select English or 中文. Refresh any X or Douyin pages you already had open.
 
-No build step is needed to install the committed `extension` folder.
+The folder to select looks like this:
 
-To explore before installing, open `extension/demo.html` locally. It uses fictional content and temporary in-memory notes. It does not write to your actual note collection.
+```text
+intent-first/           ← Select this folder in Chrome
+├── manifest.json
+├── content.bundle.js
+├── popup.html
+└── ...
+```
 
-After updating the extension, reload it on `chrome://extensions` **and refresh the social-media pages**. An old page can remain disconnected after an extension update. Copy unsaved text before refreshing; the new version offers a draft-copy action when it detects a disconnected extension.
+**Which download should I choose?** Use **`intent-first-chrome.zip`** above. GitHub's **Source code (zip)**, **Source code (tar.gz)**, and **Code → Download ZIP** are the full developer project. If you already downloaded that project, select its **`extension`** folder instead.
+
+**“Manifest file is missing or unreadable”?** Extract the ZIP first, then open the folder you selected: `manifest.json` must be directly inside it. If there is another folder inside, open that folder and check again.
+
+To try the flow before installing, open `demo.html` inside the installation folder. It uses fictional content and temporary in-memory notes; it does not write to your actual note collection.
+
+**Updating an existing installation:** replace the files inside the same installed folder, click **Reload** for Intent First on `chrome://extensions`, and refresh your X / Douyin pages. Copy any unsaved text before refreshing.
 
 ## How it works
 

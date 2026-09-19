@@ -2,6 +2,10 @@
 
 **带着目的打开，用自己的话想一想，带着下一步离开。**
 
+**[⬇ 下载 Chrome 安装包](https://github.com/chenfandanfangfarendechuxian-ctrl/intent-first/releases/latest/download/intent-first-chrome.zip)** · [查看安装步骤](#安装与演示)
+
+不需要懂代码，也不需要安装开发工具。同一个安装包包含中文和英文。
+
 [English](README.md) · [为什么做这个插件](docs/why-intent-first.zh-CN.md) · [隐私说明](PRIVACY.md) · [验证记录](VALIDATION.md)
 
 "醒一下"是一个用于 **X / Twitter 和抖音网页版**的 Chrome 扩展。它在无限信息流里加一个停顿：提醒你这次为什么来，刚才真正留下了什么，以及接下来要做什么。
@@ -16,15 +20,30 @@
 
 目前是早期的本地加载版本，**尚未上架 Chrome 应用商店**。
 
-1. 在仓库点击 **Code → Download ZIP**，下载并解压。
-2. Chrome 打开 `chrome://extensions`。
-3. 开启"开发者模式"，点"加载已解压的扩展程序"，选择解压目录中的 **`extension` 文件夹**。
-4. 点击扩展图标 →"我的记录与设置"。
-5. 刷新已经打开的抖音、X 页面。
+1. **[点击下载 `intent-first-chrome.zip`](https://github.com/chenfandanfangfarendechuxian-ctrl/intent-first/releases/latest/download/intent-first-chrome.zip)**。这是专门的安装包，不用在源码列表里找文件。
+2. **解压 ZIP。** 将解压后的 **`intent-first` 文件夹**放在固定位置，例如“文稿 / Documents”。Chrome 会从这里加载插件，安装后请保留这个文件夹。
+3. 把 **`chrome://extensions`** 复制到 Chrome 地址栏，按回车。
+4. 打开右上角的**“开发者模式”**，点击**“加载已解压的扩展程序”**（部分版本叫“加载未打包的扩展程序”）。
+5. 选择**里面直接有 `manifest.json` 的 `intent-first` 文件夹**。选择整个文件夹，不是 ZIP，也不是里面的某个文件。
+6. 点击 Chrome 右上角的拼图图标 → **Intent First** → **Notes & settings / 我的记录与设置**，选择中文或英文。最后刷新已经打开的抖音和 X 页面。
 
-仓库中的 `extension` 已构建好，安装不需要运行代码。也可以直接打开 `extension/demo.html` 体验；演示使用虚构内容，记录只在当前演示中存在，不写入真实笔记。
+你应该选择的文件夹长这样：
 
-**更新扩展之后，还要刷新社交网站页面。** 旧页面可能继续显示已经断连的弹窗。刷新前先复制未保存的文字；新版遇到断连会提供复制草稿和刷新入口。
+```text
+intent-first/           ← 在 Chrome 中选择这个文件夹
+├── manifest.json
+├── content.bundle.js
+├── popup.html
+└── ...
+```
+
+**下载哪个？** 就下载上面链接的 **`intent-first-chrome.zip`**。GitHub 的 **Source code (zip)**、**Source code (tar.gz)** 和 **Code → Download ZIP** 是完整开发项目。如果已经下载了完整项目，则选择其中的 **`extension` 文件夹**。
+
+**提示“清单文件缺失或不可读取”？** 先解压，再打开你选中的文件夹，确认里面直接有 `manifest.json`；如果里面还套着一层文件夹，就再进入一层。
+
+想先体验流程，可以打开安装文件夹里的 `demo.html`；演示使用虚构内容和临时记录，不写入真实笔记。
+
+**更新已有插件：** 将新文件放回原安装文件夹，在 `chrome://extensions` 找到 Intent First，点“重新加载”，再刷新抖音、X 页面。刷新前先复制尚未保存的内容。
 
 ## 怎么使用
 
