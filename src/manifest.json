@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "醒一下 · 有意识地刷",
+  "version": "0.4.1",
+  "description": "刷之前定目的，刷完后辨认价值，把有用内容变成一个行动。",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "打开醒一下",
+    "default_popup": "popup.html"
+  },
+  "options_page": "dashboard.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.douyin.com/*",
+        "https://douyin.com/*",
+        "https://x.com/*",
+        "https://www.x.com/*",
+        "https://twitter.com/*",
+        "https://www.twitter.com/*"
+      ],
+      "js": [
+        "connection.js",
+        "presets.js",
+        "taskcards.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
