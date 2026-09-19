@@ -1,0 +1,50 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const parser=require('@babel/parser');
+const traverse=require('@babel/traverse').default;
+const generate=require('@babel/generator').default;
+const t=require('@babel/types');
+const base=path.resolve(__dirname,'..'),src=path.join(base,'src'),out=path.join(base,'extension');
+const dictionary=JSON.parse(fs.readFileSync(path.join(base,'locales/en.json'),'utf8'));
+const version=JSON.parse(fs.readFileSync(path.join(base,'package.json'),'utf8')).version;
+const keys=Object.keys(dictionary).sort((a,b)=>b.length-a.length);
+const pattern=new RegExp(keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+const missing=new Set();
+function english(value){const result=value.replace(pattern,k=>dictionary[k]);if(/\p{Script=Han}/u.test(result))missing.add(result);return result;}
+function localize(code){
+ const ast=parser.parse(code);
+ traverse(ast,{
+  StringLiteral(p){if(!/\p{Script=Han}/u.test(p.node.value))return;const zh=p.node.value,en=english(zh);p.replaceWith(t.callExpression(t.identifier('__mfL'),[t.stringLiteral(zh),t.stringLiteral(en)]));p.skip();},
+  TemplateLiteral:{exit(p){
+   if(!p.node.quasis.some(q=>/\p{Script=Han}/u.test(q.value.cooked || '')))return;
+   const translated=t.cloneNode(p.node,true);
+   for(const q of translated.quasis){const value=english(q.value.cooked || '');q.value={cooked:value,raw:value.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$\{/g,'\\${')};}
+   p.replaceWith(t.conditionalExpression(t.binaryExpression('===',t.identifier('__mfLanguage'),t.stringLiteral('zh')),t.cloneNode(p.node,true),translated));p.skip();
+  }}
+ });
+ return generate(ast,{comments:false}).code;
+}
+const common=['connection.js','presets.js','taskcards.js'];
+const read=name=>fs.readFileSync(path.join(src,name),'utf8');
+fs.mkdirSync(out,{recursive:true});
+const localeBootstrap=`const __mfVersion=${JSON.stringify(version)};\nlet __mfLanguage='en';\ntry {__mfLanguage=(await chrome.storage.local.get('language')).language==='zh'?'zh':'en';}catch{}\nconst __mfQueryLanguage=new URLSearchParams(location.search).get('lang');\nif(['en','zh'].includes(__mfQueryLanguage) && /^(file:|chrome-extension:)$/.test(location.protocol) || ['en','zh'].includes(__mfQueryLanguage) && ['localhost','127.0.0.1'].includes(location.hostname)) __mfLanguage=__mfQueryLanguage;\nconst __mfL=(zh,en)=>__mfLanguage==='zh'?zh:en;\n`;
+function pageSetup(zhBody,enBody,zhTitle,enTitle){return `document.documentElement.lang=__mfLanguage==='zh'?'zh-CN':'en';\ndocument.title=__mfL(${JSON.stringify(zhTitle)},${JSON.stringify(enTitle)});\ndocument.body.innerHTML=__mfL(${JSON.stringify(zhBody)},${JSON.stringify(enBody)});\nconst languageBar=document.createElement('div');languageBar.className='language-bar';\nconst languageLabel=document.createElement('label');languageLabel.textContent='Language / 语言 ';\nconst languageSelect=document.createElement('select');languageSelect.setAttribute('aria-label','Language / 语言');\nfor(const [value,label] of [['en','English'],['zh','中文']]){const option=document.createElement('option');option.value=value;option.textContent=label;languageSelect.append(option);}\nlanguageSelect.value=__mfLanguage;languageLabel.append(languageSelect);\nconst languageStatus=document.createElement('small');languageStatus.textContent=__mfL('切换后请刷新已打开的抖音 / X 页面。','Refresh open Douyin / X pages after switching.');languageStatus.setAttribute('role','status');languageBar.append(languageLabel,languageStatus);document.body.prepend(languageBar);\nlanguageSelect.onchange=async()=>{\n if(!confirm(__mfL('切换语言将重新加载本页。请先保存表单内容。继续？','Changing language reloads this page. Save any edits first. Continue?'))){languageSelect.value=__mfLanguage;return;}\n try {if(chrome?.storage?.local)await chrome.storage.local.set({language:languageSelect.value});}catch(error){languageStatus.textContent=error.message;return;}\n const url=new URL(location.href);url.searchParams.set('lang',languageSelect.value);location.href=url.href;\n};\ndocument.documentElement.style.visibility='visible';\n`;}
+for(const page of ['popup','dashboard','demo']){
+ let html=read(page+'.html');
+ const zhTitle=html.match(/<title>(.*?)<\/title>/s)[1];
+ const body=html.match(/<body[^>]*>([\s\S]*)<\/body>/)[1].replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,'');
+ const enBody=english(body),enTitle=english(zhTitle);
+ html=html.replace(/lang="zh-CN"/,'lang="en" style="visibility:hidden"').replace(/<title>.*?<\/title>/s,`<title>${enTitle}</title>`).replace(/(<body[^>]*>)[\s\S]*<\/body>/,`$1${enBody}<script src="${page}.bundle.js"></script></body>`);
+ fs.writeFileSync(path.join(out,page+'.html'),html);
+ const files=page==='popup'?['popup.js']:page==='demo'?['demo.js',...common,'content.js']:[...common,'dashboard.js'];
+ const code=files.map(name=>localize(read(name).replace(".toLocaleString('zh-CN')",".toLocaleString(__mfLanguage==='zh'?'zh-CN':'en-US')"))).join('\n');
+ fs.writeFileSync(path.join(out,page+'.bundle.js'),`// Generated by npm run build.\n(async()=>{\n${localeBootstrap}${pageSetup(body,enBody,zhTitle,enTitle)}${code}\n})().catch(error=>{document.documentElement.style.visibility='visible';const p=document.createElement('p');p.textContent='Intent First could not start: '+error.message;document.body.append(p);});\n`);
+}
+const content=[...common,'content.js'].map(name=>localize(read(name))).join('\n');
+fs.writeFileSync(path.join(out,'content.bundle.js'),`// Generated by npm run build.\n(async()=>{\n${localeBootstrap}${content}\n})();\n`);
+let background=read('background.js').replace('(async () => {',"(async () => {\n      __mfLanguage=(await chrome.storage.local.get('language')).language==='zh'?'zh':'en';");
+fs.writeFileSync(path.join(out,'background.js'),`// Generated by npm run build.\nconst __mfVersion=${JSON.stringify(version)};\nlet __mfLanguage='en';\nconst __mfL=(zh,en)=>__mfLanguage==='zh'?zh:en;\n${localize(background)}\n`);
+fs.writeFileSync(path.join(out,'ui.css'),read('ui.css')+'\n.language-bar{max-width:1000px;margin:0 auto;padding:12px 24px 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.language-bar label{display:flex;align-items:center;gap:8px;margin:0;font-size:13px}.language-bar select{width:auto;padding:5px 8px}.language-bar small{color:#607269;font-size:12px}.popup .language-bar{padding:0 0 16px}.popup .language-bar small{line-height:1.4}.popup{overflow-wrap:anywhere}\n');
+const manifest=JSON.parse(read('manifest.json'));manifest.name='Intent First · 醒一下';manifest.version=version;manifest.description='Browse X and Douyin with a purpose. Reflect in your own words, then return to your next action. English / 中文.';manifest.action.default_title='Intent First';manifest.content_scripts[0].js=['content.bundle.js'];
+fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+if(missing.size){console.error('Untranslated UI fragments:\n'+[...missing].join('\n---\n'));process.exitCode=1;}else console.log('Built bilingual extension: extension/');
